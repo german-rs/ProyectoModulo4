@@ -1,0 +1,136 @@
+================================================================
+  DESAFÍOS EN LA CONSOLIDACIÓN DEL DATASET
+  Proyecto Módulo 4 — L3_obtencion_datos.py
+================================================================
+
+----------------------------------------------------------------
+1. HETEROGENEIDAD DE FUENTES
+----------------------------------------------------------------
+El dataset proviene de cinco archivos con estructuras distintas:
+dos CSVs de ventas (por año), un CSV de clientes, uno de
+productos y uno de categorías. Cada archivo fue generado de
+forma independiente, por lo que no existía garantía de que
+los tipos de datos, formatos de fecha o encodings fueran
+consistentes entre sí.
+
+  Solución aplicada:
+  - Se usó el parámetro parse_dates en pd.read_csv() para
+    forzar la conversión de columnas de fecha ("fecha_venta",
+    "fecha_registro") desde el momento de la carga.
+  - Se estandarizó el encoding a UTF-8 en todas las lecturas
+    y escrituras para evitar problemas con caracteres especiales
+    presentes en el dataset (tildes, ñ, etc.).
+
+----------------------------------------------------------------
+2. REGISTROS DUPLICADOS EN CLIENTES
+----------------------------------------------------------------
+El archivo df_clientes.csv contenía 5 filas duplicadas
+introducidas intencionalmente como ruido en la etapa de
+generación. Al realizar el JOIN con ventas usando cliente_id
+como llave, los duplicados generarían filas adicionales en el
+DataFrame consolidado, inflando artificialmente los totales.
+
+  Solución aplicada:
+  - Antes del JOIN se aplicó drop_duplicates(subset=["cliente_id"],
+    keep="first") sobre el DataFrame de clientes, reduciendo de
+    305 a 300 registros únicos.
+  - Se registró la cantidad de duplicados eliminados (5) en el
+    log de consola para trazabilidad.
+
+----------------------------------------------------------------
+3. INCONSISTENCIA EN LA COLUMNA "genero"
+----------------------------------------------------------------
+La columna "genero" del archivo de clientes presenta cuatro
+valores distintos para representar solo dos categorías:
+"M", "F", "Masculino" y "Femenino". Esta mezcla de formatos
+corto y largo proviene de la generación aleatoria del dataset.
+
+  Solución aplicada:
+  - Se normalizó con df.replace({"M": "Masculino", "F": "Femenino"})
+    antes del JOIN, dejando únicamente los valores "Masculino"
+    y "Femenino" en el DataFrame consolidado.
+
+----------------------------------------------------------------
+4. COLISIÓN DE NOMBRES DE COLUMNAS EN EL JOIN
+----------------------------------------------------------------
+Al unir las tablas mediante merge(), algunas columnas de
+distintas fuentes compartían el mismo nombre, lo que podría
+generar columnas con sufijos automáticos (_x, _y) difíciles
+de interpretar posteriormente.
+
+  Caso identificado:
+  - La columna "activo" en clientes podría confundirse con
+    futuros atributos de productos o ventas.
+
+  Solución aplicada:
+  - Se renombró "activo" a "cliente_activo" antes del JOIN
+    usando df.rename(), haciendo explícito su origen.
+  - La columna "nombre_producto" se renombró a "producto"
+    para mayor claridad semántica en el DataFrame final.
+
+----------------------------------------------------------------
+5. INTEGRIDAD REFERENCIAL DÉBIL
+----------------------------------------------------------------
+El campo cliente_id en ventas hace referencia al catálogo de
+clientes, pero no existe una restricción formal (como una
+clave foránea en SQL) que garantice que todo cliente_id de
+una venta exista en el catálogo. Lo mismo aplica para
+producto_id y categoria_id.
+
+  Riesgo:
+  - Un JOIN de tipo INNER eliminaría silenciosamente ventas
+    cuyos IDs no existieran en los catálogos, produciendo
+    pérdida de datos no advertida.
+
+  Solución aplicada:
+  - Se optó por LEFT JOIN en todos los cruces, conservando
+    el 100 % de las ventas como eje central del análisis.
+  - Se utilizó el parámetro validate="m:1" en pd.merge() para
+    detectar de forma temprana si algún catálogo tuviera IDs
+    duplicados, lo que lanzaría un error explícito en lugar
+    de producir resultados incorrectos silenciosamente.
+
+----------------------------------------------------------------
+6. OUTLIERS EN PRECIOS QUE AFECTAN LA CONSOLIDACIÓN
+----------------------------------------------------------------
+El dataset de ventas contiene aproximadamente un 2 % de
+registros con precios unitarios atípicos (entre $2.000.000
+y $5.000.000), introducidos como ruido. Estos outliers no
+impiden la consolidación técnica, pero distorsionan las
+estadísticas del DataFrame final si no se consideran.
+
+  Solución aplicada:
+  - En esta etapa los outliers se conservan en el DataFrame
+    consolidado para no alterar la trazabilidad de los datos.
+  - Se documentan aquí para que sean abordados en la etapa
+    de limpieza y transformación (siguiente fase del proyecto).
+
+----------------------------------------------------------------
+7. ORDENAMIENTO Y LEGIBILIDAD DEL DATAFRAME FINAL
+----------------------------------------------------------------
+Tras los sucesivos JOINs, las columnas quedaban en un orden
+no intuitivo (mezclando atributos de ventas, clientes y
+productos sin una secuencia lógica).
+
+  Solución aplicada:
+  - Se definió explícitamente un listado "columnas_orden" que
+    agrupa las columnas por entidad (identificadores → cliente
+    → producto/categoría → transacción).
+  - Se utilizó una comprensión de lista tolerante a cambios
+    futuros: [c for c in columnas_orden if c in df.columns],
+    evitando errores si alguna columna no estuviera presente.
+
+----------------------------------------------------------------
+8. RESULTADO FINAL
+----------------------------------------------------------------
+El DataFrame consolidado (df_consolidado.csv) integra las
+cinco fuentes en una única tabla plana con:
+
+  - 1.300 filas  (1.000 ventas 2025 + 300 ventas 2026)
+  - 22 columnas  (atributos de venta, cliente, producto y
+                  categoría en una sola vista)
+
+Este archivo está listo para ser utilizado en las etapas de
+limpieza, análisis exploratorio avanzado y visualización.
+
+================================================================

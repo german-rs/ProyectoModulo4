@@ -1,0 +1,117 @@
+================================================================
+  HALLAZGOS Y UTILIDAD DE PANDAS EN LA MANIPULACIÓN DE DATOS
+  Proyecto Módulo 4 — Dataset E-commerce 2025/2026
+================================================================
+
+----------------------------------------------------------------
+1. DESCRIPCIÓN DEL DATASET
+----------------------------------------------------------------
+El proyecto trabajó con cuatro fuentes de datos generadas
+sintéticamente para simular un negocio de e-commerce:
+
+  - clientes_ecommerce.csv  : 305 filas × 11 columnas
+  - productos.csv           :   6 filas ×  3 columnas
+  - categorias.csv          :   2 filas ×  2 columnas
+  - ventas_2025 (Excel)     : 1000 filas ×  8 columnas
+  - ventas_2026 (Excel)     :  300 filas ×  8 columnas
+
+----------------------------------------------------------------
+2. HALLAZGOS EN LA EXPLORACIÓN INICIAL
+----------------------------------------------------------------
+
+CLIENTES
+  - El dataset contiene 305 registros, 5 de los cuales son
+    filas duplicadas (introducidas intencionalmente como ruido).
+  - Se detectaron valores nulos en dos columnas clave:
+      · edad            : 17 registros sin valor (~5.6 %)
+      · ingreso_mensual : 10 registros sin valor (~3.3 %)
+  - La columna "region" presenta 9 registros con valor vacío,
+    lo que podría afectar análisis geográficos.
+  - La Región Metropolitana (RM) concentra la mayor parte de
+    los clientes (108 de 305, ~35 %), seguida de Coquimbo y
+    Valparaíso, lo cual refleja la distribución ponderada
+    definida en la generación del dataset.
+  - El ingreso mensual promedio es de $1.490.966, con un rango
+    que va desde $512.666 hasta $2.485.296.
+  - La columna "genero" presenta inconsistencias de formato:
+    conviven los valores "M"/"F" y "Masculino"/"Femenino",
+    lo que requerirá normalización en etapas posteriores.
+
+VENTAS 2025
+  - Se registraron 1.000 transacciones sin valores nulos ni
+    duplicados.
+  - El precio unitario promedio es de $474.099, pero el máximo
+    alcanza $4.995.035, evidenciando los outliers introducidos
+    (aprox. 2 % de los registros con precios atípicos).
+  - 433 ventas (~43 %) superan $1.000.000 en total_venta,
+    impulsadas principalmente por los outliers de precio.
+  - El canal más utilizado fue "Tienda Física" (355 registros),
+    seguido de "App" (322) y "Web".
+
+VENTAS 2026
+  - 300 transacciones sin valores nulos ni duplicados.
+  - El total_venta máximo asciende a $18.221.120, el valor
+    más alto del dataset completo, correspondiente a un outlier
+    con precio unitario de $4.555.280 y cantidad 4.
+  - 73 registros (~24 %) presentan una cantidad >= 4 unidades
+    por venta, lo que podría indicar compras al por mayor o
+    comportamiento de revendedores.
+
+----------------------------------------------------------------
+3. UTILIDAD DE PANDAS EN LA MANIPULACIÓN DE DATOS
+----------------------------------------------------------------
+
+Pandas demostró ser una herramienta central en cada etapa del
+flujo de trabajo, destacando en los siguientes aspectos:
+
+  a) LECTURA Y CONVERSIÓN
+     Pandas permitió convertir arrays de NumPy (obtenidos con
+     np.genfromtxt) en DataFrames estructurados de forma
+     inmediata, conservando los nombres de columna y aplicando
+     inferencia de tipos automáticamente. También facilitó la
+     lectura del archivo Excel con múltiples hojas mediante
+     pd.read_excel y el parámetro sheet_name.
+
+  b) INSPECCIÓN RÁPIDA
+     Los métodos .head(), .tail(), .shape, .dtypes, .isnull()
+     e .duplicated() ofrecieron una visión completa del estado
+     de los datos con pocas líneas de código, permitiendo
+     identificar de inmediato problemas de calidad como nulos,
+     duplicados e inconsistencias de formato.
+
+  c) ESTADÍSTICAS DESCRIPTIVAS
+     El método .describe() segmentado por tipo de dato
+     (numérico vs. categórico) entregó métricas estadísticas
+     clave —media, desviación estándar, percentiles, moda y
+     frecuencia— sin necesidad de cálculos manuales.
+
+  d) FILTROS CONDICIONALES
+     La sintaxis de filtrado booleano de Pandas resultó
+     intuitiva y expresiva. Fue posible encadenar condiciones
+     con operadores & y | para aislar segmentos específicos
+     (clientes activos en RM, ventas con outliers de precio,
+     transacciones por canal), facilitando la validación de
+     los datos generados.
+
+  e) EXPORTACIÓN
+     El método .to_csv() permitió persistir cada DataFrame
+     procesado en el directorio data/ con una sola línea de
+     código, dejando los archivos listos para ser consumidos
+     en etapas posteriores del análisis.
+
+----------------------------------------------------------------
+4. CONCLUSIÓN
+----------------------------------------------------------------
+La exploración inicial reveló que el dataset presenta una
+estructura relacional coherente y contiene el ruido esperado
+(nulos, duplicados, outliers y formatos inconsistentes).
+Estos elementos constituyen insumos valiosos para las
+siguientes etapas de limpieza y transformación.
+
+Pandas se consolidó como el eje central del flujo de datos,
+complementando a NumPy en la lectura de archivos planos y
+ofreciendo una capa de abstracción de alto nivel que redujo
+significativamente la complejidad del código necesario para
+inspeccionar, filtrar y exportar los datos.
+
+================================================================
