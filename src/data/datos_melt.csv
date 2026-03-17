@@ -1,0 +1,13 @@
+cliente_id,region,tipo_ingreso,valor
+5,Norte,ingreso_mensual,2500.0
+6,Sur,ingreso_mensual,3200.0
+7,Norte,ingreso_mensual,15000.0
+8,Este,ingreso_mensual,21250.0
+9,Oeste,ingreso_mensual,2800.0
+10,Sur,ingreso_mensual,4000.0
+5,Norte,ingreso_anual,30000.0
+6,Sur,ingreso_anual,38400.0
+7,Norte,ingreso_anual,180000.0
+8,Este,ingreso_anual,255000.0
+9,Oeste,ingreso_anual,33600.0
+10,Sur,ingreso_anual,48000.0

@@ -1,0 +1,7 @@
+,,ingreso_mensual,ingreso_mensual,ingreso_mensual,ingreso_mensual,ingreso_mensual,ingreso_anual
+,,mean,median,max,min,count,mean
+region,categoria_ingreso,,,,,,
+Norte,Alto,15000.0,15000.0,15000.0,15000.0,1,180000.0
+Norte,Bajo,2500.0,2500.0,2500.0,2500.0,1,30000.0
+Oeste,Bajo,2800.0,2800.0,2800.0,2800.0,1,33600.0
+Sur,Medio,3600.0,3600.0,4000.0,3200.0,2,43200.0

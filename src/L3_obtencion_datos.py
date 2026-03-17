@@ -284,3 +284,4 @@ if __name__ == "__main__":
     print(df.dtypes.to_string())
     print(f"\n  Valores nulos por columna:")
     print(df.isnull().sum().to_string())
+

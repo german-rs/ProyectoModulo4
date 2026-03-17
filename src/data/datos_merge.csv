@@ -1,0 +1,7 @@
+cliente_id,ingreso_mensual,region,genero,activo,ingreso_anual,tipo_cliente,genero_desc,cliente_activo,ingreso_normalizado,categoria_ingreso,pais,zona_comercial
+5,2500.0,Norte,M,True,30000.0,Estandar,Masculino,Activo,0.0,Bajo,Chile,Zona A
+6,3200.0,Sur,F,True,38400.0,Estandar,Femenino,Activo,0.0373333333333333,Medio,Chile,Zona B
+7,15000.0,Norte,F,False,180000.0,Premium,Femenino,Inactivo,0.6666666666666666,Alto,Chile,Zona A
+8,21250.0,Este,M,True,255000.0,Premium,Masculino,Activo,1.0,,Chile,Zona C
+9,2800.0,Oeste,F,True,33600.0,Estandar,Femenino,Activo,0.016,Bajo,Chile,Zona D
+10,4000.0,Sur,F,False,48000.0,Estandar,Femenino,Inactivo,0.08,Medio,Chile,Zona B

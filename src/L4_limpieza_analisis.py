@@ -1,57 +1,157 @@
 import pandas as pd
 import numpy as np
 import logging
+import os
 
-# Setting up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 class DataCleaning:
     def __init__(self, dataframe):
-        self.dataframe = dataframe
+        self.dataframe = dataframe.copy()
 
-    def z_score_outlier_detection(self, threshold=3):
-        """Detect outliers using Z-score."
-        logging.info('Applying Z-score outlier detection.')
-        z_scores = np.abs((self.dataframe - self.dataframe.mean()) / self.dataframe.std())
-        return self.dataframe[(z_scores < threshold).all(axis=1)]
-
-    def iqr_outlier_detection(self):
-        """Detect outliers using IQR."
-        logging.info('Applying IQR outlier detection.')
-        q1 = self.dataframe.quantile(0.25)
-        q3 = self.dataframe.quantile(0.75)
-        iqr = q3 - q1
-        return self.dataframe[~((self.dataframe < (q1 - 1.5 * iqr)) | (self.dataframe > (q3 + 1.5 * iqr))).any(axis=1)]
+    def identify_missing_values(self):
+        logging.info("Identificando valores nulos en el dataset.")
+        return self.dataframe.isnull().sum()
 
     def impute_missing_values(self):
-        """Impute missing values using mean, mode, and forward-fill."
-        logging.info('Imputing missing values.')
+        logging.info('Imputando valores faltantes según tipo de dato.')
+
         for col in self.dataframe.columns:
+
             if self.dataframe[col].isnull().any():
-                if self.dataframe[col].dtype in ['int64', 'float64']:
-                    self.dataframe[col].fillna(self.dataframe[col].mean(), inplace=True)
+
+                # columnas numéricas
+                if pd.api.types.is_numeric_dtype(self.dataframe[col]) and self.dataframe[col].dtype != bool:
+                    mean_val = self.dataframe[col].mean()
+                    self.dataframe[col] = self.dataframe[col].fillna(mean_val)
+
+                # columnas categóricas
                 else:
-                    self.dataframe[col].fillna(self.dataframe[col].mode()[0], inplace=True)
-        self.dataframe.fillna(method='ffill', inplace=True)
+                    mode_val = self.dataframe[col].mode()
+                    if not mode_val.empty:
+                        self.dataframe[col] = self.dataframe[col].fillna(mode_val.iloc[0])
+
+        # forward fill para posibles casos restantes
+        self.dataframe.ffill(inplace=True)
+
+        return self.dataframe
+
+    def z_score_outlier_detection(self, threshold=3):
+
+        logging.info('Aplicando detección de outliers por Z-score.')
+
+        numeric_df = self.dataframe.select_dtypes(include=['int64', 'float64'])
+
+        z_scores = np.abs((numeric_df - numeric_df.mean()) / numeric_df.std(ddof=0))
+
+        mask = (z_scores < threshold).all(axis=1)
+
+        self.dataframe = self.dataframe[mask]
+
+        return self.dataframe
+
+    def iqr_outlier_detection(self):
+
+        logging.info('Aplicando detección de outliers por IQR.')
+
+        numeric_df = self.dataframe.select_dtypes(include=['int64', 'float64'])
+
+        q1 = numeric_df.quantile(0.25)
+        q3 = numeric_df.quantile(0.75)
+
+        iqr = q3 - q1
+
+        lower_bound = q1 - 1.5 * iqr
+        upper_bound = q3 + 1.5 * iqr
+
+        mask = ~((numeric_df < lower_bound) | (numeric_df > upper_bound)).any(axis=1)
+
+        self.dataframe = self.dataframe[mask]
+
+        return self.dataframe
 
     def validate_data(self, business_rules):
-        """Validate data against business rules."
-        logging.info('Validating data with business rules.')
+
+        logging.info('Validando reglas de negocio.')
+
         for rule in business_rules:
             if not rule(self.dataframe):
-                logging.warning('Business rule failed.')
+                logging.warning(f'Regla de negocio fallida: {rule.__name__}')
                 return False
+
         return True
 
     def segmented_statistics(self, segment_by):
-        """Calculate segmented statistics."
-        logging.info('Calculating segmented statistics.')
-        return self.dataframe.groupby(segment_by).describe()
 
-# Example usage:
-# df = pd.read_csv('data.csv')
-# cleaner = DataCleaning(df)
-# clean_data = cleaner.z_score_outlier_detection()
-# cleaner.impute_missing_values()
-# if cleaner.validate_data(business_rules):
-#     stats = cleaner.segmented_statistics(['region', 'gender', 'sales_channel', 'product_category'])
+        logging.info(f'Calculando estadísticas segmentadas por: {segment_by}')
+
+        return self.dataframe.groupby(segment_by).agg({
+            'ingreso_mensual': ['mean', 'median', 'max', 'min', 'count']
+        })
+
+
+if __name__ == "__main__":
+
+    # 1. Simulación de datos
+    data = {
+        'cliente_id': list(range(5, 12)),
+        'ingreso_mensual': [2500, 3200, 15000, np.nan, 2800, 4000, 100000],
+        'region': ['Norte', 'Sur', 'Norte', 'Este', 'Oeste', 'Sur', 'Norte'],
+        'genero': ['M', 'F', 'F', 'M', np.nan, 'F', 'M'],
+        'activo': [True, True, False, True, True, False, True]
+    }
+
+    df_ecommerce = pd.DataFrame(data)
+
+    logging.info("Iniciando proceso de limpieza de datos")
+
+    # 2. Instanciar clase
+    cleaner = DataCleaning(df_ecommerce)
+
+    # 3. Identificar valores nulos
+    print("\nValores nulos detectados:")
+    print(cleaner.identify_missing_values())
+
+    # 4. Imputar valores nulos
+    cleaner.impute_missing_values()
+
+    # 5. Detectar outliers
+    cleaner.iqr_outlier_detection()
+    cleaner.z_score_outlier_detection(threshold=2)
+
+    # 6. Reglas de negocio
+    def regla_ingresos_positivos(df):
+        return (df['ingreso_mensual'] > 0).all()
+
+    reglas = [regla_ingresos_positivos]
+
+    if cleaner.validate_data(reglas):
+
+        logging.info("Validación exitosa")
+
+        # 7. Estadísticas por región
+        resumen_stats = cleaner.segmented_statistics('region')
+
+        print("\n" + "=" * 40)
+        print("RESULTADO DEL ANÁLISIS")
+        print("=" * 40)
+        print(resumen_stats)
+
+        # 8. Exportar dataset limpio
+        output_path = "data/clientes_limpios.csv"
+
+        try:
+
+            os.makedirs("data", exist_ok=True)
+
+            cleaner.dataframe.to_csv(output_path, index=False)
+
+            logging.info(f"Dataset exportado en {output_path}")
+
+        except Exception as e:
+
+            cleaner.dataframe.to_csv("clientes_limpios.csv", index=False)
+
+            logging.warning("Guardado en directorio actual por error:")
+            logging.warning(e)
