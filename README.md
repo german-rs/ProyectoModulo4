@@ -44,6 +44,9 @@ erDiagram
     }
 ~~~
 
+
+
+
 # Documento Resumen del Flujo de Trabajo
 ## Proyecto: Preparación de Datos con Python — Módulo 4
 
