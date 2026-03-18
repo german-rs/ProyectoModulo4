@@ -10,7 +10,7 @@ class DataAnalysis:
     def __init__(self, dataframe):
         self.dataframe = dataframe.copy()
 
-    # 1️⃣ Agrupamiento
+    # 1. Agrupamiento
     def group_statistics(self):
 
         logging.info("Calculando métricas resumidas con groupby().")
@@ -22,7 +22,7 @@ class DataAnalysis:
 
         return resumen
 
-    # 2️⃣ Pivot
+    # 2. Pivot
     def pivot_table(self):
 
         logging.info("Creando tabla pivot.")
@@ -36,7 +36,7 @@ class DataAnalysis:
 
         return pivot
 
-    # 3️⃣ Melt (wide → long)
+    # 3. Melt (wide → long)
     def melt_dataframe(self):
 
         logging.info("Transformando dataset con melt().")
@@ -51,7 +51,7 @@ class DataAnalysis:
 
         return melted
 
-    # 4️⃣ Merge con nueva fuente simulada
+    # 4. Merge con nueva fuente simulada
     def merge_new_source(self):
 
         logging.info("Combinando nueva fuente de datos con merge().")
@@ -71,7 +71,7 @@ class DataAnalysis:
 
         return merged
 
-    # 5️⃣ Concat para unir datasets
+    # 5. Concat para unir datasets
     def concat_datasets(self):
 
         logging.info("Concatenando datasets simulados.")
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     logging.info("Iniciando análisis de agrupamiento y pivot.")
 
-    # 1️⃣ Cargar dataset de Lección 5
+    # 1. Cargar dataset de Lección 5
     try:
 
         df = pd.read_csv("data/clientes_wrangled.csv")
@@ -156,37 +156,37 @@ if __name__ == "__main__":
 
     analyzer = DataAnalysis(df)
 
-    # 2️⃣ Agrupamiento
+    # 2. Agrupamiento
     resumen_groupby = analyzer.group_statistics()
 
     print("\n====== MÉTRICAS AGRUPADAS ======")
     print(resumen_groupby)
 
-    # 3️⃣ Pivot
+    # 3. Pivot
     pivot_table = analyzer.pivot_table()
 
     print("\n====== TABLA PIVOT ======")
     print(pivot_table)
 
-    # 4️⃣ Melt
+    # 4. Melt
     melted_df = analyzer.melt_dataframe()
 
     print("\n====== DATASET MELT ======")
     print(melted_df.head())
 
-    # 5️⃣ Merge
+    # 5. Merge
     merged_df = analyzer.merge_new_source()
 
     print("\n====== DATASET MERGE ======")
     print(merged_df.head())
 
-    # 6️⃣ Concat
+    # 6. Concat
     concat_df = analyzer.concat_datasets()
 
     print("\n====== DATASET CONCAT ======")
     print(concat_df.head())
 
-    # 7️⃣ Guardar resultados
+    # 7. Guardar resultados
     os.makedirs("data", exist_ok=True)
 
     resumen_groupby.to_csv("data/metricas_groupby.csv")
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 
         concat_df.to_excel(writer, sheet_name="Concat")
 
-    # 8️⃣ Generar documento resumen
+    # 8. Generar documento resumen
     generar_documento_resumen()
 
     logging.info("Análisis final exportado correctamente.")
